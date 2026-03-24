@@ -12,12 +12,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="Jogue o desafio do dia do Forcas Cruzadas. Baixe o app para ter a versão completa do jogo.">
 <meta property="og:title" content="Forcas Cruzadas">
-<meta property="og:description" content="Jogue o desafio do dia do Forcas Cruzadas. Baixe o app para ter a versão completa do jogo.">
-<meta property="og:image" content="https://forcascruzadas.com/favicon_forcascruzadas.png">
+<meta property="og:description" content="Jogue agora o desafio diário do Forcas Cruzadas.">
+<meta property="og:image" content="https://forcascruzadas.com/forcascruzadas-social.png">
 <meta property="og:url" content="https://forcascruzadas.com">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://forcascruzadas.com/favicon_forcascruzadas.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Forcas Cruzadas">
+<meta name="twitter:description" content="Jogue agora o desafio diário do Forcas Cruzadas.">
+<meta name="twitter:image" content="https://forcascruzadas.com/forcascruzadas-social.png">
 <link rel="icon" type="image/png" href="favicon_forcascruzadas.png">
 <title>Forcas Cruzadas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -168,12 +170,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     color: var(--dark);
     border: 1.5px solid rgba(48,49,48,0.3);
   }
-  /* Revealed: cream bg + dark text */
+  /* Revealed: cream bg + dark text, fade in */
   .tile.revealed {
     background: var(--cream);
     color: var(--dark);
     border: 1.5px solid rgba(48,49,48,0.3);
-    animation: pop .22s ease;
+    animation: fade-in 1.5s ease;
   }
   .tile.word-done {
     background: var(--cream);
@@ -183,10 +185,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   /* Flash: only the letter fades, background stays cream */
   .tile.word-flash { animation: flash-letter .5s ease 2; }
 
-  @keyframes pop {
-    0%   { transform: scale(1); }
-    50%  { transform: scale(1.12); }
-    100% { transform: scale(1); }
+  @keyframes fade-in {
+    0%   { color: transparent; }
+    100% { color: var(--dark); }
   }
   @keyframes flash-letter {
     0%, 100% { color: var(--dark); }
@@ -391,7 +392,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   /* Floating minimize button */
   #victory-minimize-btn {
     position: fixed;
-    top: 16px; right: 16px;
+    top: 80px; right: 16px;
     width: 40px; height: 40px;
     border: 2.5px solid var(--dark);
     border-radius: 10px;
