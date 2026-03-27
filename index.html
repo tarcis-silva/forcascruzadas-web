@@ -963,7 +963,12 @@ function endGame(victory) {
   const shareText = isPerfect
     ? `Forcas Cruzadas #${id}\n⭐ Terminei em ${timeStrLow}, sem errar nenhuma letra!\nJogue em forcascruzadas.com`
     : `Forcas Cruzadas #${id}\n✔️ Terminei em ${timeStrLow}!\nJogue em forcascruzadas.com`;
-  document.getElementById('btn-share').onclick = () => shareResult(shareText);
+  document.getElementById('btn-share').onclick = () => {
+    if (typeof gtag === 'function') {
+      gtag('event', 'level_share', { level_id: id });
+    }
+    shareResult(shareText);
+  };
 
   document.getElementById('victory-overlay').classList.add('active');
   document.getElementById('victory-minimize-btn').classList.add('visible');
