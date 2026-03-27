@@ -934,6 +934,15 @@ function endGame(victory) {
   const timeStr = formatTime(elapsed), timeStrLow = formatTimeLower(elapsed);
   const isPerfect = state.perfect && !state.usedAdContinue;
 
+  // GA4 event
+  if (typeof gtag === 'function') {
+    gtag('event', 'level_end', {
+      level_id: id,
+      level_time: elapsed,
+      level_perfect: isPerfect
+    });
+  }
+
   document.getElementById('victory-title').textContent = isPerfect ? 'PERFEITO!' : 'PARABÉNS!';
 
   let infoHTML = `O TEMA DO<br>FORCAS CRUZADAS #${id} ERA:<br><strong>${tema.toUpperCase()}</strong><br><br>VOCÊ VENCEU EM ${timeStr}`;
