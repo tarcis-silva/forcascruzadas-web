@@ -712,7 +712,7 @@ let state = {
 // ─────────────────────────────────────────────
 async function fetchTodayLevel() {
   const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
-  const resp = await fetch(INDEX_URL);
+  const resp = await fetch(INDEX_URL + '?v=' + Date.now());
   if (!resp.ok) throw new Error();
   const index = await resp.json();
   const entry = index.desafios_disponiveis.find(d => d.data === todayStr);
