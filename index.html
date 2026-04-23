@@ -25,10 +25,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5051899335182896"
-     crossorigin="anonymous"></script>
+<script async src="https://cdn.applixir.com/applixir.sdk3.0m.js"></script>
 
-<script>window.googletag = window.googletag || {cmd: []};</script>
 <style>
   :root {
     --cream: #F9F3E1;
@@ -483,6 +481,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TFG99F4W"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
+
+<!-- AppLixir rewarded ad container -->
+<div id="applixir_vanishing_div" style="display:none"><iframe id="applixir_parent"></iframe></div>
 
 <!-- Loading -->
 <div id="loading">
@@ -995,33 +996,33 @@ document.getElementById('victory-minimize-btn').addEventListener('click', () => 
 // ─────────────────────────────────────────────
 // REWARDED AD
 // ─────────────────────────────────────────────
-const AD_UNIT_ID = '/6499/example/rewarded'; // ← replace with your Ad Unit
-let rewardedSlot = null, rewardedCallback = null;
+// ─────────────────────────────────────────────
+// APPLIXIR REWARDED ADS
+// ─────────────────────────────────────────────
+const APPLIXIR_API_KEY = '3e1734d4-4681-4b44-81ee-9351b9653d36';
+let rewardedCallback = null;
 
 function initRewardedAd() {
-  if (typeof googletag === 'undefined') return;
-  googletag.cmd.push(() => {
-    rewardedSlot = googletag.defineOutOfPageSlot(AD_UNIT_ID, googletag.enums.OutOfPageFormat.REWARDED);
-    if (!rewardedSlot) return;
-    rewardedSlot.addService(googletag.pubads());
-    googletag.pubads().addEventListener('rewardedSlotReady', e => {
-      document.getElementById('ad-status').textContent = 'ANÚNCIO CARREGADO. INICIANDO...';
-      setTimeout(() => e.makeRewardedVisible(), 300);
-    });
-    googletag.pubads().addEventListener('rewardedSlotGranted', () => {
-      document.getElementById('ad-overlay').classList.remove('active');
-      if (rewardedCallback) { rewardedCallback(); rewardedCallback = null; }
-    });
-    googletag.pubads().addEventListener('rewardedSlotClosed', () => {
-      document.getElementById('ad-overlay').classList.remove('active');
-      if (!rewardedCallback) return;
-      rewardedCallback = null;
-      document.getElementById('defeat-info').innerHTML =
-        `VOCÊ FECHOU O ANÚNCIO ANTES DO FIM.<br>ASSISTA COMPLETAMENTE PARA CONTINUAR.`;
-      document.getElementById('defeat-overlay').classList.add('active');
-    });
-    googletag.enableServices();
-  });
+  // AppLixir initializes automatically via SDK — nothing needed here
+}
+
+function adStatusCallback(status) {
+  // status codes: 0 = ad complete (grant reward), 1 = no ad available,
+  // 2 = ad skipped/closed early, 3 = error
+  document.getElementById('ad-overlay').classList.remove('active');
+  if (status === 0) {
+    // Ad watched fully — grant reward
+    if (rewardedCallback) { rewardedCallback(); rewardedCallback = null; }
+  } else if (status === 1 || status === 3) {
+    // No ad available or error — grant reward directly as fallback
+    if (rewardedCallback) { rewardedCallback(); rewardedCallback = null; }
+  } else {
+    // Closed early (status 2) — show message
+    rewardedCallback = null;
+    document.getElementById('defeat-info').innerHTML =
+      `VOCÊ FECHOU O ANÚNCIO ANTES DO FIM.<br>ASSISTA COMPLETAMENTE PARA CONTINUAR.`;
+    document.getElementById('defeat-overlay').classList.add('active');
+  }
 }
 
 function requestRewardedAd(purpose) {
@@ -1044,8 +1045,22 @@ function requestRewardedAd(purpose) {
     };
   }
 
-  // When ads are not available, grant reward directly
-  if (rewardedCallback) { rewardedCallback(); rewardedCallback = null; }
+  const options = {
+    apiKey: APPLIXIR_API_KEY,
+    injectionElementId: 'applixir_vanishing_div',
+    adStatusCb: adStatusCallback,
+    fallback: 1,
+    verbosity: 0
+  };
+
+  if (typeof invokeApplixirVideoUnit === 'function') {
+    document.getElementById('ad-status').textContent = 'CARREGANDO ANÚNCIO...';
+    document.getElementById('ad-overlay').classList.add('active');
+    invokeApplixirVideoUnit(options);
+  } else {
+    // SDK not loaded yet — grant reward directly
+    if (rewardedCallback) { rewardedCallback(); rewardedCallback = null; }
+  }
 }
 
 // ─────────────────────────────────────────────
