@@ -25,7 +25,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script async src="https://cdn.applixir.com/applixir.sdk3.0m.js"></script>
+<script src="https://cdn.applixir.com/applixir.app.v6.0.1.js"></script>
 
 <style>
   :root {
@@ -1001,28 +1001,58 @@ document.getElementById('victory-minimize-btn').addEventListener('click', () => 
 // ─────────────────────────────────────────────
 const APPLIXIR_API_KEY = '3e1734d4-4681-4b44-81ee-9351b9653d36';
 let rewardedCallback = null;
+let adActuallyStarted = false;
 
 function initRewardedAd() {
-  // AppLixir initializes automatically via SDK — nothing needed here
+  // AppLixir SDK initializes automatically — nothing needed here
 }
 
 function adStatusCallback(status) {
-  // status codes: 0 = ad complete (grant reward), 1 = no ad available,
-  // 2 = ad skipped/closed early, 3 = error
-  document.getElementById('ad-overlay').classList.remove('active');
-  if (status === 0) {
+  const type = status && status.type ? status.type : status;
+  console.log('[AppLixir] status:', type);
+
+  if (type === 'started') {
+    adActuallyStarted = true;
+    return;
+  }
+
+  // Intermediate events — ignore
+  if (['loaded', 'firstQuartile', 'midpoint', 'thirdQuartile', 'paused', 'click', 'consentDeclined'].includes(type)) {
+    return;
+  }
+
+  if (type === 'complete' || type === 'thankYouModalClosed') {
     // Ad watched fully — grant reward
+    document.getElementById('ad-overlay').classList.remove('active');
+    adActuallyStarted = false;
     if (rewardedCallback) { rewardedCallback(); rewardedCallback = null; }
-  } else if (status === 1 || status === 3) {
-    // No ad available or error — grant reward directly as fallback
+  } else if (type === 'allAdsCompleted') {
+    // Fires after all ads OR when no ads available — grant reward either way
+    document.getElementById('ad-overlay').classList.remove('active');
+    adActuallyStarted = false;
     if (rewardedCallback) { rewardedCallback(); rewardedCallback = null; }
-  } else {
-    // Closed early (status 2) — show message
+  } else if ((type === 'skipped' || type === 'manuallyEnded') && adActuallyStarted) {
+    // User skipped a real ad — show message
+    document.getElementById('ad-overlay').classList.remove('active');
+    adActuallyStarted = false;
     rewardedCallback = null;
     document.getElementById('defeat-info').innerHTML =
       `VOCÊ FECHOU O ANÚNCIO ANTES DO FIM.<br>ASSISTA COMPLETAMENTE PARA CONTINUAR.`;
     document.getElementById('defeat-overlay').classList.add('active');
+  } else {
+    // Any other status (skipped without real ad, unknown) — grant reward as fallback
+    document.getElementById('ad-overlay').classList.remove('active');
+    adActuallyStarted = false;
+    if (rewardedCallback) { rewardedCallback(); rewardedCallback = null; }
   }
+}
+
+function adErrorCallback(error) {
+  // Error or no fill — grant reward directly as fallback
+  console.log('[AppLixir] error:', error && error.getError ? error.getError().data : error);
+  document.getElementById('ad-overlay').classList.remove('active');
+  adActuallyStarted = false;
+  if (rewardedCallback) { rewardedCallback(); rewardedCallback = null; }
 }
 
 function requestRewardedAd(purpose) {
@@ -1045,20 +1075,15 @@ function requestRewardedAd(purpose) {
     };
   }
 
-  const options = {
-    apiKey: APPLIXIR_API_KEY,
-    injectionElementId: 'applixir_vanishing_div',
-    adStatusCb: adStatusCallback,
-    fallback: 1,
-    verbosity: 0
-  };
-
-  if (typeof invokeApplixirVideoUnit === 'function') {
-    document.getElementById('ad-status').textContent = 'CARREGANDO ANÚNCIO...';
-    document.getElementById('ad-overlay').classList.add('active');
-    invokeApplixirVideoUnit(options);
+  if (typeof initializeAndOpenPlayer === 'function') {
+    initializeAndOpenPlayer({
+      apiKey: APPLIXIR_API_KEY,
+      injectionElementId: 'applixir_vanishing_div',
+      adStatusCallbackFn: adStatusCallback,
+      adErrorCallbackFn: adErrorCallback
+    });
   } else {
-    // SDK not loaded yet — grant reward directly
+    // SDK not loaded — grant reward directly
     if (rewardedCallback) { rewardedCallback(); rewardedCallback = null; }
   }
 }
