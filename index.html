@@ -48,6 +48,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     align-items: center;
     overflow-x: hidden;
   }
+  #game-wrap {
+    width: 100%;
+    max-width: 480px;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
 
   /* ── TOP BAR ── */
   #topbar {
@@ -204,7 +213,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   #keyboard-wrap {
     width: 100%;
     max-width: 480px;
-    padding: 4px 6px 8px;
+    padding: 4px 6px 20px;
     flex-shrink: 0;
   }
   .kbd-row {
@@ -501,6 +510,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <!-- Top bar -->
+<div id="game-wrap">
 <div id="topbar">
   <div class="topbar-left">
     <button class="top-btn" id="help-btn" title="Como jogar" aria-label="Ajuda">?</button>
@@ -533,6 +543,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- Ad banner slot -->
 <div id="ad-banner-wrap"></div>
+</div><!-- end #game-wrap -->
 
 <!-- Toast -->
 <div id="theme-toast"></div>
@@ -1029,17 +1040,39 @@ async function shareResult(text) {
 // ─────────────────────────────────────────────
 // REVEAL
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// REVEAL
+// ─────────────────────────────────────────────
 document.getElementById('reveal-btn').addEventListener('click', () => {
   if (!state.level || state.gameOver) return;
-  document.getElementById('reveal-result').style.display = 'none';
-  document.getElementById('reveal-prompt-text').style.display = '';
-  const btnWatch = document.getElementById('btn-watch-reveal');
-  btnWatch.style.display = '';
-  btnWatch.textContent = 'AGUARDE (5)';
-  btnWatch.disabled = true;
-  document.getElementById('btn-cancel-reveal').style.display = '';
+
+  const temaKey = `fc_tema_revelado_${state.level.data}`;
+  const jaRevelou = localStorage.getItem(temaKey);
+
   document.getElementById('reveal-overlay').classList.add('active');
-  startCountdown('btn-watch-reveal', 'VER TEMA', grantReveal);
+
+  if (jaRevelou) {
+    // Já revelou hoje — mostra direto o tema
+    document.getElementById('reveal-info').innerHTML =
+      `O TEMA É:<br><strong>${state.level.tema.toUpperCase()}</strong>`;
+    document.getElementById('reveal-result').style.display = 'flex';
+    document.getElementById('reveal-prompt-text').style.display = 'none';
+    document.getElementById('btn-watch-reveal').style.display = 'none';
+    document.getElementById('btn-cancel-reveal').style.display = 'none';
+  } else {
+    // Primeira vez — mostra contagem regressiva
+    document.getElementById('reveal-result').style.display = 'none';
+    document.getElementById('reveal-prompt-text').style.display = '';
+    const btnWatch = document.getElementById('btn-watch-reveal');
+    btnWatch.style.display = '';
+    btnWatch.textContent = 'AGUARDE (5)';
+    btnWatch.disabled = true;
+    document.getElementById('btn-cancel-reveal').style.display = '';
+    startCountdown('btn-watch-reveal', 'VER TEMA', () => {
+      localStorage.setItem(temaKey, '1');
+      grantReveal();
+    });
+  }
 });
 document.getElementById('btn-cancel-reveal').addEventListener('click', () => document.getElementById('reveal-overlay').classList.remove('active'));
 document.getElementById('btn-close-reveal').addEventListener('click', () => document.getElementById('reveal-overlay').classList.remove('active'));
