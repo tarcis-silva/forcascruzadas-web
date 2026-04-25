@@ -149,8 +149,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     justify-content: center;
     padding: 8px 16px;
     min-height: 0;
+    overflow: hidden;
   }
-  #grid { display: grid; gap: 2px; width: 100%; overflow: hidden; }
+  #grid {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
 
   .tile {
     aspect-ratio: 1;
@@ -158,7 +166,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     display: flex; align-items: center; justify-content: center;
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
-    font-size: calc((90vw / var(--total-cols)) * 0.70);
+    font-size: var(--tile-font-px, calc((90vw / var(--total-cols)) * 0.70));
     color: transparent;
     background: var(--dark);
     user-select: none;
@@ -170,7 +178,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   /* Desktop: grid travado em 480px */
   @media (min-width: 480px) {
     .tile {
-      font-size: calc((448px / var(--total-cols)) * 0.70);
+      font-size: var(--tile-font-px, calc((448px / var(--total-cols)) * 0.70));
     }
   }
 
@@ -213,7 +221,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   #keyboard-wrap {
     width: 100%;
     max-width: 480px;
-    padding: 4px 6px 20px;
+    padding: 4px 6px 4px;
     flex-shrink: 0;
   }
   .kbd-row {
@@ -743,7 +751,6 @@ function initGame(level) {
 
   state.winningScore = state.grid.filter(c => c.type === 'letter').length;
 
-  // Font size proportional to tile via CSS calc
   document.documentElement.style.setProperty('--total-cols', level.cols);
 
   // Update challenge info in topbar
@@ -753,6 +760,26 @@ function initGame(level) {
   renderGrid();
   renderKeyboard();
   updateStars();
+
+  // Size grid after layout is ready
+  requestAnimationFrame(() => {
+    const gridWrap = document.getElementById('grid-wrap');
+    const grid = document.getElementById('grid');
+    const wrapW = gridWrap.clientWidth - 32;
+    const wrapH = gridWrap.clientHeight - 16;
+
+    const maxTileFromW = Math.floor((wrapW - (level.cols - 1) * 2) / level.cols);
+    const maxTileFromH = Math.floor((wrapH - (level.rows - 1) * 2) / level.rows);
+    const tileSize = Math.min(maxTileFromW, maxTileFromH);
+
+    const gridW = tileSize * level.cols + (level.cols - 1) * 2;
+    const gridH = tileSize * level.rows + (level.rows - 1) * 2;
+
+    grid.style.width = gridW + 'px';
+    grid.style.height = '';
+    grid.style.gridAutoRows = tileSize + 'px';
+    document.documentElement.style.setProperty('--tile-font-px', (tileSize * 0.70).toFixed(1) + 'px');
+  });
 }
 
 // ─────────────────────────────────────────────
