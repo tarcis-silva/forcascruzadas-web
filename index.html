@@ -418,8 +418,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   /* Floating minimize button */
   #victory-minimize-btn {
-    position: absolute;
-    top: -52px; right: 0;
+    position: fixed;
     width: 40px; height: 40px;
     border: 2.5px solid var(--dark);
     border-radius: 10px;
@@ -567,14 +566,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 
+<!-- Floating minimize/maximize button -->
+<button id="victory-minimize-btn" aria-label="Minimizar resultado">
+  <svg id="minimize-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+</button>
+
 <!-- VICTORY PANEL -->
 <div class="overlay" id="victory-overlay">
-  <div class="panel" style="position:relative">
-    <button id="victory-minimize-btn" aria-label="Minimizar resultado">
-      <svg id="minimize-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
-    </button>
+  <div class="panel">
     <div class="panel-title" id="victory-title">PARABÉNS!</div>
     <div class="panel-stars" id="result-stars"></div>
     <div class="panel-info" id="victory-info"></div>
@@ -987,7 +988,15 @@ function endGame(victory) {
   };
 
   document.getElementById('victory-overlay').classList.add('active');
-  document.getElementById('victory-minimize-btn').classList.add('visible');
+  const minBtn = document.getElementById('victory-minimize-btn');
+  minBtn.classList.add('visible');
+  // Align to right edge of panel, fixed at top of screen
+  requestAnimationFrame(() => {
+    const panel = document.querySelector('#victory-overlay .panel');
+    const rect = panel.getBoundingClientRect();
+    minBtn.style.top = '12px';
+    minBtn.style.left = (rect.right - 40) + 'px';
+  });
 }
 
 // ─────────────────────────────────────────────
