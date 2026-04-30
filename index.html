@@ -724,7 +724,7 @@ function initGame(level) {
     lives: 3, perfect: true, usedAdContinue: false,
     revealedCount: 0, winningScore: 0,
     gameOver: false, victory: false,
-    startTime: performance.now(), usedLetters: new Set(),
+    startTime: null, usedLetters: new Set(),
   };
 
   victoryMinimized = false;
@@ -877,6 +877,9 @@ function onLetterPress(letter) {
   if (state.gameOver) return;
   if (state.usedLetters.has(letter)) return;
 
+  // Start timer on first letter press
+  if (!state.startTime) state.startTime = performance.now();
+
   const matches = state.grid.filter(c => c.type === 'letter' && !c.revealed && c.normalized === letter);
 
   if (matches.length === 0) {
@@ -947,7 +950,7 @@ function endGame(victory) {
   state.victory  = victory;
   if (!victory) return;
 
-  const elapsed = Math.round((performance.now() - state.startTime) / 1000);
+  const elapsed = state.startTime ? Math.round((performance.now() - state.startTime) / 1000) : 0;
   const id = state.level.id, tema = state.level.tema;
   const timeStr = formatTime(elapsed), timeStrLow = formatTimeLower(elapsed);
   const isPerfect = state.perfect && !state.usedAdContinue;
@@ -979,8 +982,8 @@ function endGame(victory) {
 
   // Share text
   const shareText = isPerfect
-    ? `Forcas Cruzadas #${id}\n⭐ Terminei em ${timeStrLow}, sem errar nenhuma letra!\nJogue em forcascruzadas.com`
-    : `Forcas Cruzadas #${id}\n✔️ Terminei em ${timeStrLow}!\nJogue em forcascruzadas.com`;
+    ? `Forcas Cruzadas #${id}\n⭐ Terminei em ${timeStrLow}, sem errar nenhuma letra!\n✏️ Jogue em forcascruzadas.com`
+    : `Forcas Cruzadas #${id}\n✔️ Terminei em ${timeStrLow}!\n✏️ Jogue em forcascruzadas.com`;
   document.getElementById('btn-share').onclick = () => {
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: 'level_share', level_id: id });
