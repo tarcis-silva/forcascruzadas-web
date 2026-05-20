@@ -1158,6 +1158,32 @@ function showToast(msg, duration = 2500) {
     document.getElementById('error-state').style.display = 'flex';
   }
 })();
+
+// ─────────────────────────────────────────────
+// VISIBILITY — fires page_view on tab resume,
+// and reloads level if the date has changed
+// ─────────────────────────────────────────────
+let lastLoadedDate = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState !== 'visible') return;
+
+  // Always push a page_view — covers returning users, shared devices, etc.
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'page_view', page_path: '/' });
+
+  // Reload level only if the date has changed
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+  if (today !== lastLoadedDate) {
+    lastLoadedDate = today;
+    try {
+      const level = await fetchTodayLevel();
+      initGame(level);
+    } catch {
+      // silently fail — user still sees previous level
+    }
+  }
+});
 </script>
 <!-- SEO content section - visible to crawlers -->
 <section id="seo-content" style="width:100%;max-width:480px;padding:32px 24px 48px;color:var(--dark);font-family:'Outfit',sans-serif;">
